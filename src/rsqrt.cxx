@@ -100,6 +100,7 @@ void orthonormalize_stable(double *A)
 	return;
 }
 
+/* TODO: Change so it only prints exact if PRINT_ERROR is set */
 real_e_t random_norm2(long n, double a, double b)
 {
 	static std::default_random_engine generator;

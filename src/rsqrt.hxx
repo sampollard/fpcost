@@ -19,12 +19,6 @@ using namespace boost::math;
 
 #define RAND_EXCEPTION 3
 
-#define DIM 10
-#define UNIF_A (0.001)
-#define UNIF_B (1000.)
-#define NEWTON_ITERS 9
-#define N_RAND 100
-
 /* A floating-point approximation with its "exact" mpfr value */
 typedef struct real_e {
 	double approx;
