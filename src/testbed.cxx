@@ -30,7 +30,7 @@ void print_header()
 #ifdef PRINT_ERROR
 	printf("Type\tOperation\tHexadecimal\tDecimal\tRelErr\tAbsErr\n");
 #else
-	/* TODO: Print your header for timing */
+	/* TODO: Print your header for timing with fields separated by tabs */
 	printf("No timing information\n");
 #endif
 }
@@ -133,17 +133,19 @@ int main(int argc, char *argv[])
 	/* Satire Double precision */
 	for (iters = 0; iters <= SATIRE_RSQRT_ITERS; iters++) {
 		/* TODO: Run many times */
-		approx_s = S_rsqrt_s(xs, iters);
-		approx_d = S_rsqrt_d(xd, iters);
-		exact = one/sqrt(xd);
+		for (j = 0; j <= NUM_TRIALS; j++) {
+			approx_s = S_rsqrt_s(xs, iters);
+			approx_d = S_rsqrt_d(xd, iters);
+			exact = one/sqrt(xd);
 #ifdef PRINT_ERROR
-		print_error<float>(
-				"float\tS_rsqrt(x,n="+std::to_string(iters)+")",
-				approx_s, exact);
-		print_error<double>(
-				"double\tS_rsqrt(x,n="+std::to_string(iters)+")",
-				approx_d, exact);
+			print_error<float>(
+					"float\tS_rsqrt(x,n="+std::to_string(iters)+")",
+					approx_s, exact);
+			print_error<double>(
+					"double\tS_rsqrt(x,n="+std::to_string(iters)+")",
+					approx_d, exact);
 #endif
+		}
 	}
 
 	/* Dot product */
