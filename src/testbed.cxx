@@ -17,7 +17,7 @@
 
 /* TODO: Tweak these as needed */
 // #define PRINT_ERROR 1
-#define NUM_TRIALS 700000
+#define NUM_TRIALS 1000
 #define DIM 10
 
 /* A good starting point for distributions */
@@ -31,7 +31,7 @@ void print_header()
 	printf("Type\tOperation\tHexadecimal\tDecimal\tRelErr\tAbsErr\n");
 #else
 	/* TODO: Print your header for timing with fields separated by tabs */
-	printf("No timing information\n");
+	printf("Type\tOperation\tTime(s)\n");
 #endif
 }
 
@@ -56,6 +56,10 @@ void print_error(std::string header, FLOAT_T approx_f, MPFR_T exact)
 	mpfr_printf("%.20RNe\t%.20RNe\n", relerr, abserr);
 }
 
+void print_timer(std::string header, std::chrono::duration<double> time){
+	printf("%s\t %f\t\n", header.c_str(), time.count());
+}
+
 int main(int argc, char *argv[])
 {
 	float  xs, approx_s;
@@ -68,12 +72,15 @@ int main(int argc, char *argv[])
 	zero = 0.0;
 	one = 1.0;
 	print_header();
-
+	auto start = std::chrono::steady_clock::now();
+	auto end = std::chrono::steady_clock::now();
+	std::chrono::duration<double> elapsed_seconds;
+	
 	for (iters = 0; iters < XMM_ITERS; iters++) {
 		/* Single precision Q_sqrt */
 		/* TODO: Run many times for different inputs (vary xs) and print out the time */
 		
-		auto start = std::chrono::steady_clock::now();
+		start = std::chrono::steady_clock::now();
 		for (j = 0; j < NUM_TRIALS; j++) {
 			approx_s = Q_rsqrt(xs, iters);
 #ifdef PRINT_ERROR
@@ -87,9 +94,10 @@ int main(int argc, char *argv[])
 					approx_s, exact);
 #endif
 		}
-		auto end = std::chrono::steady_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end-start;
-    		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+		end = std::chrono::steady_clock::now();
+		elapsed_seconds = end-start;
+    		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
+		
 		
 		/* Double precision Qsqrt */
 		/* TODO: Run many times (xd) use the number generated as xs */
@@ -109,8 +117,9 @@ int main(int argc, char *argv[])
 #endif
 		}
 		end = std::chrono::steady_clock::now();
-    		elapsed_seconds = end-start;
-    		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+		elapsed_seconds = end-start;
+		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
+		
 	}
 
 	/* XMM approximations */
@@ -119,7 +128,7 @@ int main(int argc, char *argv[])
 		/* Single Precision */
 		/* TODO: Run many times for different inputs and print out the time */
 		
-		auto start = std::chrono::steady_clock::now();
+		start = std::chrono::steady_clock::now();
 		for (j = 0; j < NUM_TRIALS; j++) {
 			approx_s = xmm_rsqrt_s(xs, iters);
 #ifdef PRINT_ERROR
@@ -129,9 +138,9 @@ int main(int argc, char *argv[])
 					approx_s, exact);
 #endif
 		}
-		auto end = std::chrono::steady_clock::now();
-    		std::chrono::duration<double> elapsed_seconds = end-start;
-    		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+		end = std::chrono::steady_clock::now();
+		elapsed_seconds = end-start;
+		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
 
 		/* Double Precision */
 		/* TODO: Run many times, use the number generated as xd */
@@ -147,13 +156,14 @@ int main(int argc, char *argv[])
 #endif
 		}
 		end = std::chrono::steady_clock::now();
-    		elapsed_seconds = end-start;
-    		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+		elapsed_seconds = end-start;
+		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
+
 	}
 
 	/* Satire Double precision */
 	for (iters = 0; iters <= SATIRE_RSQRT_ITERS; iters++) {
-		/* TODO: Run many times */
+		start = std::chrono::steady_clock::now();
 		for (j = 0; j <= NUM_TRIALS; j++) {
 			approx_s = S_rsqrt_s(xs, iters);
 			approx_d = S_rsqrt_d(xd, iters);
@@ -167,6 +177,9 @@ int main(int argc, char *argv[])
 					approx_d, exact);
 #endif
 		}
+		end = std::chrono::steady_clock::now();
+		elapsed_seconds = end-start;
+		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
 	}
 
 	/* Dot product */
@@ -175,9 +188,8 @@ int main(int argc, char *argv[])
 	real_e_t t;
 	for (iters = 0; iters < N_RAND; iters++) {
 		/* Norm squared */
-		/* TODO: Run many times and time */
-		
-		auto start = std::chrono::steady_clock::now();
+
+		start = std::chrono::steady_clock::now();
 		for (j = 0; j <= NUM_TRIALS; j++) {
 			t = random_norm2(DIM, UNIF_A, UNIF_B);
 		}
@@ -186,12 +198,12 @@ int main(int argc, char *argv[])
 				"double\t||x||_2^2(dim=" + std::to_string(DIM)+")",
 				t.approx, t.exact);
 #endif
-		auto end = std::chrono::steady_clock::now();
-    		std::chrono::duration<double> elapsed_seconds = end-start;
-    		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
-		
+		end = std::chrono::steady_clock::now();
+		elapsed_seconds = end-start;
+		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
+
 		/* 1/sqrt(norm^2) */
-		/* TODO: Run many times and time */
+		
 		start = std::chrono::steady_clock::now();
 		for (j = 0; j <= NUM_TRIALS; j++) {
 			approx_d = 1.0/sqrt(t.approx);
@@ -203,8 +215,8 @@ int main(int argc, char *argv[])
 #endif
 		}
 		end = std::chrono::steady_clock::now();
-    		elapsed_seconds = end-start;
-    		std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+		elapsed_seconds = end-start;
+		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
 		
 		approx = approx_d;
 		relerr = abs((exact - approx)/exact);
