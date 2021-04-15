@@ -17,7 +17,7 @@
 
 /* TODO: Tweak these as needed */
 // #define PRINT_ERROR 1
-#define NUM_TRIALS 1000
+#define NUM_TRIALS 10000
 #define DIM 10
 
 /* A good starting point for distributions */
@@ -31,7 +31,7 @@ void print_header()
 	printf("Type\tOperation\tHexadecimal\tDecimal\tRelErr\tAbsErr\n");
 #else
 	/* TODO: Print your header for timing with fields separated by tabs */
-	printf("Type\tOperation\tTime(s)\n");
+	printf("Type\tOperation\tTrials\tTime(s)\n");
 #endif
 }
 
@@ -57,7 +57,7 @@ void print_error(std::string header, FLOAT_T approx_f, MPFR_T exact)
 }
 
 void print_timer(std::string header, std::chrono::duration<double> time){
-	printf("%s\t %f\t\n", header.c_str(), time.count());
+	printf("%7s\t %i\t% f\t\n", header.c_str(), NUM_TRIALS, time.count());
 }
 
 int main(int argc, char *argv[])
@@ -96,8 +96,7 @@ int main(int argc, char *argv[])
 		}
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
-    		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
-		
+		print_timer("float\tQ_rsqrt(x,n=" + std::to_string(iters)+")", elapsed_seconds);		
 		
 		/* Double precision Qsqrt */
 		/* TODO: Run many times (xd) use the number generated as xs */
@@ -118,7 +117,7 @@ int main(int argc, char *argv[])
 		}
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
-		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
+		print_timer("float\tQ_rsqrt(x,n="+std::to_string(iters)+")", elapsed_seconds);
 		
 	}
 
@@ -140,7 +139,7 @@ int main(int argc, char *argv[])
 		}
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
-		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
+		print_timer("float\txmm_rsqrt(x,n="+std::to_string(iters)+")", elapsed_seconds);
 
 		/* Double Precision */
 		/* TODO: Run many times, use the number generated as xd */
@@ -157,8 +156,8 @@ int main(int argc, char *argv[])
 		}
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
-		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
-
+		print_timer("float\txmm_rsqrt(x,n=" + std::to_string(iters) + ")", elapsed_seconds);
+	
 	}
 
 	/* Satire Double precision */
@@ -179,7 +178,7 @@ int main(int argc, char *argv[])
 		}
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
-		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
+		print_timer("float\tS_rsqrt(x,n=" + std::to_string(iters) + ")", elapsed_seconds);
 	}
 
 	/* Dot product */
@@ -200,7 +199,7 @@ int main(int argc, char *argv[])
 #endif
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
-		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
+		print_timer("float\t||x||_2^2(dim=" + std::to_string(DIM) + ")", elapsed_seconds);
 
 		/* 1/sqrt(norm^2) */
 		
@@ -216,7 +215,7 @@ int main(int argc, char *argv[])
 		}
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
-		print_timer("chrono\tNUM_TRIALS", elapsed_seconds);
+		print_timer("float\trsqrt(||x||_2^2)(dim=" + std::to_string(DIM) + ")", elapsed_seconds);
 		
 		approx = approx_d;
 		relerr = abs((exact - approx)/exact);
