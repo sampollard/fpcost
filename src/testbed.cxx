@@ -17,7 +17,7 @@
 
 /* TODO: Tweak these as needed */
 // #define PRINT_ERROR 1
-#define NUM_TRIALS 10000
+#define NUM_TRIALS 1000
 #define DIM 10
 
 /* A good starting point for distributions */
@@ -57,7 +57,7 @@ void print_error(std::string header, FLOAT_T approx_f, MPFR_T exact)
 }
 
 void print_timer(std::string header, std::chrono::duration<double> time){
-	printf("%7s\t %i\t% f\t\n", header.c_str(), NUM_TRIALS, time.count());
+	printf("%s\t %i\t %f\t\n", header.c_str(), NUM_TRIALS, time.count());
 }
 
 int main(int argc, char *argv[])
