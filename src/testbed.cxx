@@ -15,10 +15,14 @@
 #define SATIRE_RSQRT_ITERS 9
 #define N_RAND 100
 
-/* TODO: Tweak these as needed */
-// #define PRINT_ERROR 1
+/* Tweak these as needed */
+#ifdef PRINT_ERROR
 #define NUM_TRIALS 1000
 #define DIM 10
+#else
+#define NUM_TRIALS 1000
+#define DIM 10
+#endif
 
 /* A good starting point for distributions */
 #define UNIF_A (0.001)
@@ -66,7 +70,7 @@ int main(int argc, char *argv[])
 	double xd, approx_d;
 	long iters; /* Newton iterations */
 	long j;
-	xd = 3.0;
+	xd = 100.0;
 	xs = (float) xd;
 	MPFR_T exact, approx, relerr, abserr, zero, one;
 	zero = 0.0;
@@ -75,20 +79,16 @@ int main(int argc, char *argv[])
 	auto start = std::chrono::steady_clock::now();
 	auto end = std::chrono::steady_clock::now();
 	std::chrono::duration<double> elapsed_seconds;
-	
+
 	for (iters = 0; iters < XMM_ITERS; iters++) {
 		/* Single precision Q_sqrt */
 		/* TODO: Run many times for different inputs (vary xs) and print out the time */
-		
+
 		start = std::chrono::steady_clock::now();
 		for (j = 0; j < NUM_TRIALS; j++) {
 			approx_s = Q_rsqrt(xs, iters);
 #ifdef PRINT_ERROR
 			exact = one/sqrt((double) xs);
-			print_exact("MPFR(" +
-			            std::to_string(std::numeric_limits<MPFR_T>::digits) +
-			            ")\tQ_rsqrt(x,n=" + std::to_string(iters) + ")",
-			            exact);
 			print_error<float>(
 					"float\tQ_rsqrt(x,n=" + std::to_string(iters)+")",
 					approx_s, exact);
@@ -96,11 +96,11 @@ int main(int argc, char *argv[])
 		}
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
-		print_timer("float\tQ_rsqrt(x,n=" + std::to_string(iters)+")", elapsed_seconds);		
-		
+		print_timer("float\tQ_rsqrt(x,n=" + std::to_string(iters)+")", elapsed_seconds);
+
 		/* Double precision Qsqrt */
 		/* TODO: Run many times (xd) use the number generated as xs */
-		
+
 		start = std::chrono::steady_clock::now();
 		for (j = 0; j < NUM_TRIALS; j++) {
 			approx_d = Q_rsqrt_d(xd, iters);
@@ -108,8 +108,7 @@ int main(int argc, char *argv[])
 			exact = one/sqrt(xd);
 			print_exact("MPFR(" +
 			            std::to_string(std::numeric_limits<MPFR_T>::digits) +
-			            ")\tQ_rsqrt(x,n=" + std::to_string(iters) + ")",
-			            exact);
+			            ")\trsqrt", exact);
 			print_error<double>(
 					"double\tQ_rsqrt(x,n="+std::to_string(iters)+")",
 					approx_d, exact);
@@ -118,7 +117,7 @@ int main(int argc, char *argv[])
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
 		print_timer("float\tQ_rsqrt(x,n="+std::to_string(iters)+")", elapsed_seconds);
-		
+
 	}
 
 	/* XMM approximations */
@@ -126,7 +125,7 @@ int main(int argc, char *argv[])
 	for (iters = 0; iters <= XMM_ITERS; iters++) {
 		/* Single Precision */
 		/* TODO: Run many times for different inputs and print out the time */
-		
+
 		start = std::chrono::steady_clock::now();
 		for (j = 0; j < NUM_TRIALS; j++) {
 			approx_s = xmm_rsqrt_s(xs, iters);
@@ -143,7 +142,6 @@ int main(int argc, char *argv[])
 
 		/* Double Precision */
 		/* TODO: Run many times, use the number generated as xd */
-		
 		start = std::chrono::steady_clock::now();
 		for (j = 0; j <= NUM_TRIALS; j++) {
 			approx_d = xmm_rsqrt_d(xd, iters);
@@ -157,15 +155,15 @@ int main(int argc, char *argv[])
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
 		print_timer("float\txmm_rsqrt(x,n=" + std::to_string(iters) + ")", elapsed_seconds);
-	
+
 	}
 
 	/* Satire Double precision */
 	for (iters = 0; iters <= SATIRE_RSQRT_ITERS; iters++) {
 		start = std::chrono::steady_clock::now();
-		for (j = 0; j <= NUM_TRIALS; j++) {
-			approx_s = S_rsqrt_s(xs, iters);
-			approx_d = S_rsqrt_d(xd, iters);
+		for (j = 0; j < NUM_TRIALS; j++) {
+			approx_s = S_rsqrt<float>(xs, iters);
+			approx_d = S_rsqrt<double>(xd, iters);
 			exact = one/sqrt(xd);
 #ifdef PRINT_ERROR
 			print_error<float>(
@@ -173,6 +171,26 @@ int main(int argc, char *argv[])
 					approx_s, exact);
 			print_error<double>(
 					"double\tS_rsqrt(x,n="+std::to_string(iters)+")",
+					approx_d, exact);
+#endif
+			approx_s = S_rsqrt_one<float>(xs, iters);
+			approx_d = S_rsqrt_one<double>(xd, iters);
+#ifdef PRINT_ERROR
+			print_error<float>(
+					"float\tS_rsqrt_one(x,n="+std::to_string(iters)+")",
+					approx_s, exact);
+			print_error<double>(
+					"double\tS_rsqrt_one(x,n="+std::to_string(iters)+")",
+					approx_d, exact);
+#endif
+			approx_s = S_rsqrt_x<float>(xs, iters);
+			approx_d = S_rsqrt_x<double>(xd, iters);
+#ifdef PRINT_ERROR
+			print_error<float>(
+					"float\tS_rsqrt_x(x,n="+std::to_string(iters)+")",
+					approx_s, exact);
+			print_error<double>(
+					"double\tS_rsqrt_x(x,n="+std::to_string(iters)+")",
 					approx_d, exact);
 #endif
 		}
@@ -187,7 +205,6 @@ int main(int argc, char *argv[])
 	real_e_t t;
 	for (iters = 0; iters < N_RAND; iters++) {
 		/* Norm squared */
-
 		start = std::chrono::steady_clock::now();
 		for (j = 0; j <= NUM_TRIALS; j++) {
 			t = random_norm2(DIM, UNIF_A, UNIF_B);
@@ -202,7 +219,6 @@ int main(int argc, char *argv[])
 		print_timer("float\t||x||_2^2(dim=" + std::to_string(DIM) + ")", elapsed_seconds);
 
 		/* 1/sqrt(norm^2) */
-		
 		start = std::chrono::steady_clock::now();
 		for (j = 0; j <= NUM_TRIALS; j++) {
 			approx_d = 1.0/sqrt(t.approx);
@@ -216,12 +232,14 @@ int main(int argc, char *argv[])
 		end = std::chrono::steady_clock::now();
 		elapsed_seconds = end-start;
 		print_timer("float\trsqrt(||x||_2^2)(dim=" + std::to_string(DIM) + ")", elapsed_seconds);
-		
+
 		approx = approx_d;
 		relerr = abs((exact - approx)/exact);
 		abserr = abs(exact - approx);
+#ifdef PRINT_ERROR
 		printf("double\trsqrt(||x||_2^2)(dim=%d)\t% 24a\t% 20.17e\t", DIM, approx_d, approx_d);
 		mpfr_printf("%.20RNe\t%.20RNe\n", relerr, abserr);
+#endif
 	}
 
 	return 0;
