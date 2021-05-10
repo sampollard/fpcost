@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 			            std::to_string(std::numeric_limits<MPFR_T>::digits) +
 			            ")\trsqrt", exact);
 			print_error<double>(
-					"double\tQ_rsqrt_d(x,n="+std::to_string(iters)+")",
+					"double\tQ_rsqrt(x,n="+std::to_string(iters)+")",
 					approx_d, exact);
 #endif
 		}
@@ -160,6 +160,7 @@ int main(int argc, char *argv[])
 
 	/* Satire Double precision */
 	for (iters = 0; iters <= SATIRE_RSQRT_ITERS; iters++) {
+		start = std::chrono::steady_clock::now();
 		for (j = 0; j < NUM_TRIALS; j++) {
 			approx_s = S_rsqrt<float>(xs, iters);
 			approx_d = S_rsqrt<double>(xd, iters);
