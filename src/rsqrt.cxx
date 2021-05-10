@@ -13,7 +13,7 @@ float Q_rsqrt(float x, int n)
 	float y = *reinterpret_cast<float*>(&i);
 	/* Newton's Method */
 	for (int j = 0; j < n; j++) {
-		y *= threehalfs - (x2 * y * y);
+		y = y * (threehalfs - (x2 * y * y));
 	}
 	return y;
 }
@@ -21,6 +21,10 @@ float Q_rsqrt(float x, int n)
 double Q_rsqrt_d(double x, int n)
 {
 	/* Integer constant derived by https://cs.uwaterloo.ca/~m32rober/rsqrt.pdf */
+	/* There is another, conflicting one by Lomont at
+	* http://www.lomont.org/papers/2003/InvSqrt.pdf
+	* which claims it is 0x5fe6ec85e7de30da.
+	* TODO: Investigate this! */
 	double const x2 = x * 0.5f;
 	double const threehalfs = 1.5f;
 	/* Initial Guess */
@@ -29,19 +33,7 @@ double Q_rsqrt_d(double x, int n)
 	double y = *reinterpret_cast<double*>(&i);
 	/* Newton's Method */
 	for (int j = 0; j < n; j++) {
-		y *= threehalfs - (x2 * y * y);
-	}
-	return y;
-}
-
-double S_rsqrt_d(double x, int n)
-{
-	double const x2 = x * 0.5f;
-	double const threehalfs = 1.5f;
-	/* Not a good intitial guess, but better than nothing */
-	double y = 0.5 / x;
-	for (int j = 0; j < n; j++) {
-		y *= threehalfs - (x2 * y * y);
+		y = y * (threehalfs - (x2 * y * y));
 	}
 	return y;
 }
@@ -53,7 +45,19 @@ float S_rsqrt_s(float x, int n)
 	/* Not a good intitial guess, but better than nothing */
 	float y = 0.5 / x;
 	for (int j = 0; j < n; j++) {
-		y *= threehalfs - (x2 * y * y);
+		y = y * (threehalfs - (x2 * y * y));
+	}
+	return y;
+}
+
+double S_rsqrt_d(double x, int n)
+{
+	double const x2 = x * 0.5f;
+	double const threehalfs = 1.5f;
+	/* Not a good intitial guess, but better than nothing */
+	double y = 0.5 / x;
+	for (int j = 0; j < n; j++) {
+		y = y * (threehalfs - (x2 * y * y));
 	}
 	return y;
 }
@@ -69,7 +73,7 @@ float xmm_rsqrt_s(float x, int n)
 	/* free operation, just interpret low bits of vector as float */
 	y = _mm_cvtss_f32(y0);
 	for (int j = 0; j < n; j++) {
-		y *= threehalfs - (x2 * y * y);
+		y = y * (threehalfs - (x2 * y * y));
 	}
 	return y;
 }
@@ -85,7 +89,7 @@ double xmm_rsqrt_d(double x, int n)
 	y0 = _mm_rsqrt_ps(y0);
 	y = (double) _mm_cvtss_f32(y0);
 	for (int j = 0; j < n; j++) {
-		y *= threehalfs - (x2 * y * y);
+		y = y * (threehalfs - (x2 * y * y));
 	}
 	return y;
 }

@@ -15,10 +15,13 @@
 #define SATIRE_RSQRT_ITERS 9
 #define N_RAND 100
 
-/* TODO: Tweak these as needed */
-// #define PRINT_ERROR 1
+/* Control PRINT_ERROR as a build command */
+#ifdef PRINT_ERROR
 #define NUM_TRIALS 1
 #define DIM 10
+#else
+#define NUM_TRIALS 1000
+#endif
 
 /* A good starting point for distributions */
 #define UNIF_A (0.001)
@@ -62,7 +65,7 @@ int main(int argc, char *argv[])
 	double xd, approx_d;
 	long iters; /* Newton iterations */
 	long j;
-	xd = 3.0;
+	xd = 100.0;
 	xs = (float) xd;
 	MPFR_T exact, approx, relerr, abserr, zero, one;
 	zero = 0.0;
@@ -76,10 +79,6 @@ int main(int argc, char *argv[])
 			approx_s = Q_rsqrt(xs, iters);
 #ifdef PRINT_ERROR
 			exact = one/sqrt((double) xs);
-			print_exact("MPFR(" +
-			            std::to_string(std::numeric_limits<MPFR_T>::digits) +
-			            ")\tQ_rsqrt(x,n=" + std::to_string(iters) + ")",
-			            exact);
 			print_error<float>(
 					"float\tQ_rsqrt(x,n=" + std::to_string(iters)+")",
 					approx_s, exact);
@@ -93,10 +92,9 @@ int main(int argc, char *argv[])
 			exact = one/sqrt(xd);
 			print_exact("MPFR(" +
 			            std::to_string(std::numeric_limits<MPFR_T>::digits) +
-			            ")\tQ_rsqrt(x,n=" + std::to_string(iters) + ")",
-			            exact);
+			            ")\trsqrt", exact);
 			print_error<double>(
-					"double\tQ_rsqrt(x,n="+std::to_string(iters)+")",
+					"double\tQ_rsqrt_d(x,n="+std::to_string(iters)+")",
 					approx_d, exact);
 #endif
 		}
@@ -119,7 +117,7 @@ int main(int argc, char *argv[])
 
 		/* Double Precision */
 		/* TODO: Run many times, use the number generated as xd */
-		for (j = 0; j <= NUM_TRIALS; j++) {
+		for (j = 0; j < NUM_TRIALS; j++) {
 			approx_d = xmm_rsqrt_d(xd, iters);
 #ifdef PRINT_ERROR
 			exact = one/sqrt(xd);
@@ -133,9 +131,9 @@ int main(int argc, char *argv[])
 	/* Satire Double precision */
 	for (iters = 0; iters <= SATIRE_RSQRT_ITERS; iters++) {
 		/* TODO: Run many times */
-		for (j = 0; j <= NUM_TRIALS; j++) {
-			approx_s = S_rsqrt_s(xs, iters);
-			approx_d = S_rsqrt_d(xd, iters);
+		for (j = 0; j < NUM_TRIALS; j++) {
+			approx_s = S_rsqrt<float>(xs, iters);
+			approx_d = S_rsqrt<double>(xd, iters);
 			exact = one/sqrt(xd);
 #ifdef PRINT_ERROR
 			print_error<float>(
@@ -143,6 +141,26 @@ int main(int argc, char *argv[])
 					approx_s, exact);
 			print_error<double>(
 					"double\tS_rsqrt(x,n="+std::to_string(iters)+")",
+					approx_d, exact);
+#endif
+			approx_s = S_rsqrt_one<float>(xs, iters);
+			approx_d = S_rsqrt_one<double>(xd, iters);
+#ifdef PRINT_ERROR
+			print_error<float>(
+					"float\tS_rsqrt_one(x,n="+std::to_string(iters)+")",
+					approx_s, exact);
+			print_error<double>(
+					"double\tS_rsqrt_one(x,n="+std::to_string(iters)+")",
+					approx_d, exact);
+#endif
+			approx_s = S_rsqrt_x<float>(xs, iters);
+			approx_d = S_rsqrt_x<double>(xd, iters);
+#ifdef PRINT_ERROR
+			print_error<float>(
+					"float\tS_rsqrt_x(x,n="+std::to_string(iters)+")",
+					approx_s, exact);
+			print_error<double>(
+					"double\tS_rsqrt_x(x,n="+std::to_string(iters)+")",
 					approx_d, exact);
 #endif
 		}
@@ -155,7 +173,7 @@ int main(int argc, char *argv[])
 	for (iters = 0; iters < N_RAND; iters++) {
 		/* Norm squared */
 		/* TODO: Run many times and time */
-		for (j = 0; j <= NUM_TRIALS; j++) {
+		for (j = 0; j < NUM_TRIALS; j++) {
 			t = random_norm2(DIM, UNIF_A, UNIF_B);
 		}
 #ifdef PRINT_ERROR
@@ -166,7 +184,7 @@ int main(int argc, char *argv[])
 
 		/* 1/sqrt(norm^2) */
 		/* TODO: Run many times and time */
-		for (j = 0; j <= NUM_TRIALS; j++) {
+		for (j = 0; j < NUM_TRIALS; j++) {
 			approx_d = 1.0/sqrt(t.approx);
 #ifdef PRINT_ERROR
 			exact = one/sqrt(t.exact);
@@ -178,8 +196,10 @@ int main(int argc, char *argv[])
 		approx = approx_d;
 		relerr = abs((exact - approx)/exact);
 		abserr = abs(exact - approx);
+#ifdef PRINT_ERROR
 		printf("double\trsqrt(||x||_2^2)(dim=%d)\t% 24a\t% 20.17e\t", DIM, approx_d, approx_d);
 		mpfr_printf("%.20RNe\t%.20RNe\n", relerr, abserr);
+#endif
 	}
 
 	return 0;
