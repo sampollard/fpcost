@@ -1,0 +1,6 @@
+-R . FNMethods
+-arg -w
+-arg all
+GappaDefs.v
+CG.v
+Flimp.v
