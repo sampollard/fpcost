@@ -11,10 +11,16 @@ can think of it in two parts: error analysis, and cost analysis
 The main contribution here is a method to generate FPTaylor. The main
 directories here are `cclose`, `ccorrect`, and `search`.
 
+### Search
+Inside here, we have a few shell scripts which generate the "scalable"
+FPTaylor scripts to compare with a combination of hand-written error
+analysis along with FPTaylor.
+
 ## Cost Analysis
 This is the code contained in the `src/cost` directory. This code runs
 performance _and_ error results for the particularly nasty sections of
-floating-point such as subnormals.
+floating-point such as subnormals. Other examples can be found in
+`cclose` and `ccorrect`.
 
 ### Dependencies
 - C++ compiler supporting `-std=c++-20` (Will work on c++-14 for now,
